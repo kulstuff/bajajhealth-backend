@@ -10,7 +10,7 @@ const dietSchema = new Schema({
         type: Number,
         required: true
     },
-    nameFood: [
+    name: [
         {
             type: String,
             required: true
@@ -26,8 +26,9 @@ const dietSchema = new Schema({
             type: Number
         }
     ],
-    calorieAdd: {
+    calorieSum: {
         type: Number,
+        required: true
     }
 });
 

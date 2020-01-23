@@ -1,10 +1,11 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 
 const rewardSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
     },
     date: {
         type: String,
@@ -22,6 +23,10 @@ const rewardSchema = new Schema({
         type: Number,
         required: true
     },
+    status: {
+        type: String,
+        required: true
+    }
 });
 
-module.exports = mongoose.model("Reward", rewardSchema);
+module.exports = mongoose.model("Reward", rewardSchema)

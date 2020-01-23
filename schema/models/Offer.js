@@ -2,8 +2,12 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const offerSchema = new Schema({
-    nameOffer: {
-        type: Number,
+    name: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
         required: true
     },
     reqHP: {
@@ -18,4 +22,4 @@ const offerSchema = new Schema({
     ]
 });
 
-module.exports = mongoose.model("Offer", offerSchema);
+module.exports = mongoose.model("Offer", offerSchema)

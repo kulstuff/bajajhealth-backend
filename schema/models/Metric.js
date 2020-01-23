@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const metricSchema = new Schema({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User'
+		ref: 'User',
+		required: true
 	},
 	date: {
 		type: String,
@@ -21,12 +22,6 @@ const metricSchema = new Schema({
 		type: Number,
 		required: true
 	},
-	clinicalData: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: "ClinicalData"
-		}
-	],
 	diets: [{
 		type: Schema.Types.ObjectId,
 		ref: 'Diets'
