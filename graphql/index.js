@@ -1,8 +1,6 @@
 const graphql = require('graphql')
 const { GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLID, GraphQLList, GraphQLInt, GraphQLNonNull, GraphQLBoolean, GraphQLFloat } = graphql
 
-const nexmo = require('nexmo')
-
 // Userbase
 const User = require('../schema/models/User')
 const Metric = require('../schema/models/Metric')
@@ -41,7 +39,7 @@ const UserType = new GraphQLObjectType({
             }
         },
         friends: {
-            type: GraphQLList(FriendType),
+            type: GraphQLList(UserType),
             resolve(parent, args) {
                 return User.find({ friends: { $in: parent.id } })
             }
@@ -71,7 +69,7 @@ const UserType = new GraphQLObjectType({
 
 const ChallengeType = new GraphQLObjectType({
     name: 'Challenge',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         user: {
             type: GraphQLNonNull(UserType),
@@ -106,7 +104,7 @@ const ChallengeType = new GraphQLObjectType({
 
 const MetricType = new GraphQLObjectType({
     name: 'Metric',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         user: {
             type: GraphQLNonNull(UserType),
@@ -129,7 +127,7 @@ const MetricType = new GraphQLObjectType({
 
 const DietType = new GraphQLObjectType({
     name: 'Diet',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         metric: {
             type: GraphQLNonNull(MetricType),
@@ -147,7 +145,7 @@ const DietType = new GraphQLObjectType({
 
 const InsuranceType = new GraphQLObjectType({
     name: 'Insurance',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         name: { type: GraphQLNonNull(GraphQLString)},
         description: { type: GraphQLNonNull(GraphQLString)},
@@ -163,7 +161,7 @@ const InsuranceType = new GraphQLObjectType({
 
 const OfferType = new GraphQLObjectType({
     name: 'Offer',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         name: { type: GraphQLNonNull(GraphQLString)},
         description: { type: GraphQLNonNull(GraphQLString)},
@@ -179,7 +177,7 @@ const OfferType = new GraphQLObjectType({
 
 const RewardType = new GraphQLObjectType({
     name: 'Reward',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         user: {
             type: GraphQLNonNull(UserType),
@@ -353,7 +351,7 @@ const RootMutation = new GraphQLObjectType({
                     return err
                 }
             }
-        },
+        }
     }
 })
 
