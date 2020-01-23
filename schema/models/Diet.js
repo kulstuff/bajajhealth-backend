@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 const dietSchema = new Schema({
     metric: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: 'Metric',
         required: true
     },
     type: {
