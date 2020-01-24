@@ -330,6 +330,7 @@ const RootMutation = new GraphQLObjectType({
                 try {
                     const user = await User.findOne({ email: args.email })
                     if (user) throw new Error('Email in use already')
+                    var bmi = (args.height != null && args.weight != null) ? args.weight / (args.height * args.height) : null
                     const hashedPassword = await bcrypt.hash(args.password, 12)
                     const picture = args.displayPicture ? args.displayPicture : Math.floor(Math.random() * 8)
                     var newUser = new User({
@@ -338,7 +339,7 @@ const RootMutation = new GraphQLObjectType({
                         email: args.email,
                         password: hashedPassword,
                         age: args.age,
-                        bmi: (args.height != null && args.weight != null) ? args.weight / (args.height * args.height)  : null,
+                        bmi: bmi,
                         healthIndex: (args.height != null && args.weight != null) ? (100 - (10 * Math.abs(bmi - 21.5))) : null,
                         gender: args.gender ? args.gender : null,
                         height: args.height ? args.height : null,
