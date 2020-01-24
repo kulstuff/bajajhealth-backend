@@ -339,6 +339,7 @@ const RootMutation = new GraphQLObjectType({
                         password: hashedPassword,
                         age: args.age,
                         bmi: (args.height != null && args.weight != null) ? args.weight / (args.height * args.height)  : null,
+                        healthIndex: (args.height != null && args.weight != null) ? (100 - (10 * Math.abs(bmi - 21.5))) : null,
                         gender: args.gender ? args.gender : null,
                         height: args.height ? args.height : null,
                         weight: args.weight ? args.weight : null,
