@@ -357,23 +357,23 @@ const RootMutation = new GraphQLObjectType({
                 }
             }
         },
-        syncWithFit: {
-            type: GraphQLList(MetricType),
-            args: {
-                accessToken: {type: GraphQLNonNull(GraphQLString)}
-            },
-            resolve (parent, args, req) {
-                try {
-                    if(!req.userId) throw new Error('Unauthenticated')
-                    const userMetrics = Metric.find({user: parent.id})
-                    if(userMetrics.length == 0 || userMetrics[userMetrics.length].date )
-                }
-                catch(err) {
-                    console.log('Error Syncing with Google Fit: ', err)
-                    return err
-                }
-            }
-        }
+        // syncWithFit: {
+        //     type: GraphQLList(MetricType),
+        //     args: {
+        //         accessToken: {type: GraphQLNonNull(GraphQLString)}
+        //     },
+        //     resolve (parent, args, req) {
+        //         try {
+        //             if(!req.userId) throw new Error('Unauthenticated')
+        //             const userMetrics = Metric.find({user: parent.id})
+        //             if(userMetrics.length == 0 || userMetrics[userMetrics.length].date )
+        //         }
+        //         catch(err) {
+        //             console.log('Error Syncing with Google Fit: ', err)
+        //             return err
+        //         }
+        //     }
+        // }
     }
 })
 
