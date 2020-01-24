@@ -23,6 +23,7 @@ const UserType = new GraphQLObjectType({
         hp: { type: GraphQLFloat },
         bp: { type: GraphQLFloat },
         gender: { type: GraphQLString },
+        gToken: { type: GraphQLString },
         email: { type: GraphQLNonNull(GraphQLString) },
         password: { type: GraphQLNonNull(GraphQLString) },
         dateCreated: { type: GraphQLNonNull(GraphQLString) },
