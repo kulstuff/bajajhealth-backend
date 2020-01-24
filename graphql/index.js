@@ -340,6 +340,8 @@ const RootMutation = new GraphQLObjectType({
                         password: hashedPassword,
                         age: args.age,
                         bmi: bmi,
+                        bp: 3000,
+                        hp: 2500,
                         healthIndex: (args.height != null && args.weight != null) ? (100 - (10 * Math.abs(bmi - 21.5))) : null,
                         gender: args.gender ? args.gender : null,
                         height: args.height ? args.height : null,
@@ -359,6 +361,15 @@ const RootMutation = new GraphQLObjectType({
                 }
             }
         },
+        addDiet: {
+            type: GraphQLNonNull(DietType),
+            args: {
+
+            },
+            resolve (parent, args, req) {
+
+            }
+        }
         // syncWithFit: {
         //     type: GraphQLList(MetricType),
         //     args: {
