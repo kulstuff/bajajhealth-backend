@@ -1,6 +1,6 @@
 const graphql = require('graphql')
 const { GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLID, GraphQLList, GraphQLInt, GraphQLNonNull, GraphQLBoolean, GraphQLFloat } = graphql
-
+const Axios = require('axios')
 // Userbase
 const User = require('../schema/models/User')
 const Metric = require('../schema/models/Metric')
@@ -22,6 +22,8 @@ const UserType = new GraphQLObjectType({
         bmi: { type: GraphQLFloat },
         hp: { type: GraphQLFloat },
         bp: { type: GraphQLFloat },
+        height: { type: GraphQLFloat },
+        weight: { type: GraphQLFloat },
         gender: { type: GraphQLString },
         gToken: { type: GraphQLString },
         email: { type: GraphQLNonNull(GraphQLString) },
@@ -351,6 +353,23 @@ const RootMutation = new GraphQLObjectType({
                     return { userId: savedUser.id, token: token, userType: 'User', tokenExpiration: 8760 }
                 }
                 catch (err) {
+                    return err
+                }
+            }
+        },
+        syncWithFit: {
+            type: GraphQLList(MetricType),
+            args: {
+                accessToken: {type: GraphQLNonNull(GraphQLString)}
+            },
+            resolve (parent, args, req) {
+                try {
+                    if(!req.userId) throw new Error('Unauthenticated')
+                    const userMetrics = Metric.find({user: parent.id})
+                    if(userMetrics.length == 0 || userMetrics[userMetrics.length].date )
+                }
+                catch(err) {
+                    console.log('Error Syncing with Google Fit: ', err)
                     return err
                 }
             }
