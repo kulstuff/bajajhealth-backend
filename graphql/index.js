@@ -320,6 +320,7 @@ const RootMutation = new GraphQLObjectType({
                 height: { type: GraphQLFloat },
                 weight: { type: GraphQLFloat },
                 gender: { type: GraphQLString },
+                gToken: { type: GraphQLString },
                 displayPicture: { type: GraphQLInt },
             },
             async resolve(parent, args) {
@@ -330,6 +331,7 @@ const RootMutation = new GraphQLObjectType({
                     const picture = args.displayPicture ? args.displayPicture : Math.floor(Math.random() * 8)
                     var newUser = new User({
                         name: args.name,
+                        gToken: args.gToken,
                         email: args.email,
                         password: hashedPassword,
                         age: args.age,

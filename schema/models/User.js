@@ -57,10 +57,13 @@ const userSchema = new Schema({
     ],
     friends: [
         {
-        type: Schema.Types.ObjectId,
-        ref: "User"
+            type: Schema.Types.ObjectId,
+            ref: "User"
         }
     ],
+    gToken: {
+        type: String
+    },
     displayPicture: {
         type: Number,
         required: true
