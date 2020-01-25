@@ -16,7 +16,7 @@ async function getSource (dataSource) {
             "endTimeMillis": i + stride
         }, {
             headers: {
-                'Authorization': 'Bearer ya29.Il-7B7zM8IgMJ6AUsN82g3r77WyHNW7gV1DZQon9ermjdSZDlK5ZNy0rClkig9-g_lglKQKcDp6W5lCSYbQrMkc2dHoMM6PG7tlezwUIllpvNArADK3qUzqQiPh1mbeSyA'
+                'Authorization': 'Bearer ya29.ImC7BxgME0ChpIAdseHTXQk8RU0qg8PxTOj0INaLqNR33eAthkC2V2ICMZm7qRf9kikgjVgbrNOSvFENChBiigIyx2MIuhRaCsPJnmAkqX2sGf4MaOs0leiksywxodaLsOY'
             }, 
         }).then(res => {
             var bucketSize = res.data.bucket.length
@@ -38,7 +38,7 @@ run()
 async function run () {
     await Axios.get('https://www.googleapis.com/fitness/v1/users/me/dataSources', {
             headers: {
-                'Authorization': 'Bearer ya29.Il-7B7zM8IgMJ6AUsN82g3r77WyHNW7gV1DZQon9ermjdSZDlK5ZNy0rClkig9-g_lglKQKcDp6W5lCSYbQrMkc2dHoMM6PG7tlezwUIllpvNArADK3qUzqQiPh1mbeSyA'
+                'Authorization': 'Bearer ya29.ImC7BxgME0ChpIAdseHTXQk8RU0qg8PxTOj0INaLqNR33eAthkC2V2ICMZm7qRf9kikgjVgbrNOSvFENChBiigIyx2MIuhRaCsPJnmAkqX2sGf4MaOs0leiksywxodaLsOY'
             }, 
         }).then(async res => {
             const sizeOfDataSources = res.data.dataSource.length

@@ -16,6 +16,12 @@ const userSchema = new Schema({
     bmi: {
         type: Number,
     },
+    diets: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Diet'
+        }
+    ],
     bp: {
         type: Number,
     },
