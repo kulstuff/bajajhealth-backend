@@ -16,6 +16,12 @@ const userSchema = new Schema({
     bmi: {
         type: Number,
     },
+    diets: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Diet'
+        }
+    ],
     bp: {
         type: Number,
     },
@@ -57,10 +63,13 @@ const userSchema = new Schema({
     ],
     friends: [
         {
-        type: Schema.Types.ObjectId,
-        ref: "User"
+            type: Schema.Types.ObjectId,
+            ref: "User"
         }
     ],
+    gToken: {
+        type: String
+    },
     displayPicture: {
         type: Number,
         required: true

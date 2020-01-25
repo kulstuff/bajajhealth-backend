@@ -1,8 +1,6 @@
 const graphql = require('graphql')
 const { GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLID, GraphQLList, GraphQLInt, GraphQLNonNull, GraphQLBoolean, GraphQLFloat } = graphql
-
-const nexmo = require('nexmo')
-
+const Axios = require('axios')
 // Userbase
 const User = require('../schema/models/User')
 const Metric = require('../schema/models/Metric')
@@ -24,7 +22,10 @@ const UserType = new GraphQLObjectType({
         bmi: { type: GraphQLFloat },
         hp: { type: GraphQLFloat },
         bp: { type: GraphQLFloat },
+        height: { type: GraphQLFloat },
+        weight: { type: GraphQLFloat },
         gender: { type: GraphQLString },
+        gToken: { type: GraphQLString },
         email: { type: GraphQLNonNull(GraphQLString) },
         password: { type: GraphQLNonNull(GraphQLString) },
         dateCreated: { type: GraphQLNonNull(GraphQLString) },
@@ -40,8 +41,14 @@ const UserType = new GraphQLObjectType({
                 return Challenge.find({ user: parent.id })
             }
         },
+        diets: {
+            type: GraphQLList(ChallengeType),
+            resolve(parent, args) {
+                return Diet.find({ user: parent.id })
+            }
+        },
         friends: {
-            type: GraphQLList(FriendType),
+            type: GraphQLList(UserType),
             resolve(parent, args) {
                 return User.find({ friends: { $in: parent.id } })
             }
@@ -71,7 +78,7 @@ const UserType = new GraphQLObjectType({
 
 const ChallengeType = new GraphQLObjectType({
     name: 'Challenge',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         user: {
             type: GraphQLNonNull(UserType),
@@ -91,22 +98,18 @@ const ChallengeType = new GraphQLObjectType({
                 return User.findById(parent.to)
             }
         },
-        date: { type: GraphQLNonNull(GraphQLString) },
-        type: { type: GraphQLNonNull(GraphQLString) },
-        value: { type: GraphQLNonNull(GraphQLString) },
-        reward: {
-            type: GraphQLNonNull(RewardType),
-            resolve(parent, args) {
-                return Reward.findOne({ challenge: parent.id })
-            }
-        },
-        status: { type: GraphQLNonNull(GraphQLString) },
+        date: {type: GraphQLNonNull(GraphQLString)},
+        type: {type: GraphQLNonNull(GraphQLString)},
+        value: {type: GraphQLNonNull(GraphQLString)},
+        rewardBP: {type: GraphQLNonNull(GraphQLInt)},
+        rewardHP: {type: GraphQLNonNull(GraphQLInt)},
+        status: {type: GraphQLNonNull(GraphQLString)}
     })
 })
 
 const MetricType = new GraphQLObjectType({
     name: 'Metric',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         user: {
             type: GraphQLNonNull(UserType),
@@ -129,25 +132,32 @@ const MetricType = new GraphQLObjectType({
 
 const DietType = new GraphQLObjectType({
     name: 'Diet',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
+        user: {
+            type: GraphQLNonNull(UserType),
+            resolve (parent, args) {
+                return User.findOne({diets: {$in: parent.id}})
+            }
+        },
         metric: {
-            type: GraphQLNonNull(MetricType),
+            type: MetricType,
+            // type: GraphQLNonNull(MetricType),
             resolve(parent, args) {
                 return Metric.findOne({ diets: { $in: parent.id } })
             }
         },
-        type: { type: GraphQLNonNull(GraphQLInt) },
-        name: { type: GraphQLList(GraphQLString) },
-        calorie: { type: GraphQLList(GraphQLString) },
-        name: { type: GraphQLList(GraphQLString) },
-        calorieSum: { type: GraphQLNonNull(GraphQLInt) }
+        type: {type: GraphQLNonNull(GraphQLInt)},
+        name: {type: GraphQLString},
+        calorie: {type: GraphQLInt},
+        quantity: {type: GraphQLInt},
+        calorieSum: {type: GraphQLInt}
     })
 })
 
 const InsuranceType = new GraphQLObjectType({
     name: 'Insurance',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         name: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLNonNull(GraphQLString) },
@@ -163,7 +173,7 @@ const InsuranceType = new GraphQLObjectType({
 
 const OfferType = new GraphQLObjectType({
     name: 'Offer',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         name: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLNonNull(GraphQLString) },
@@ -179,7 +189,7 @@ const OfferType = new GraphQLObjectType({
 
 const RewardType = new GraphQLObjectType({
     name: 'Reward',
-    fields: ({
+    fields: () => ({
         id: { type: GraphQLNonNull(GraphQLID) },
         user: {
             type: GraphQLNonNull(UserType),
@@ -297,7 +307,7 @@ const RootQuery = new GraphQLObjectType({
             type: GraphQLList(InsuranceType),
             async resolve(parent, args, req) {
                 try {
-                    if (!req.userType) throw new Error('Unauthenticated or Unauthorized!')
+                    if (!req.userId) throw new Error('Unauthenticated or Unauthorized!')
                     return await Insurance.find()
                 }
                 catch (err) {
@@ -318,24 +328,30 @@ const RootMutation = new GraphQLObjectType({
                 name: { type: GraphQLNonNull(GraphQLString) },
                 email: { type: GraphQLNonNull(GraphQLString) },
                 password: { type: GraphQLNonNull(GraphQLString) },
-                age: { type: GraphQLNonNull(GraphQLFloat) },
+                age: { type: GraphQLNonNull(GraphQLInt) },
                 height: { type: GraphQLFloat },
                 weight: { type: GraphQLFloat },
                 gender: { type: GraphQLString },
+                gToken: { type: GraphQLString },
                 displayPicture: { type: GraphQLInt },
             },
             async resolve(parent, args) {
                 try {
                     const user = await User.findOne({ email: args.email })
                     if (user) throw new Error('Email in use already')
+                    var bmi = (args.height != null && args.weight != null) ? args.weight / (args.height * args.height) : null
                     const hashedPassword = await bcrypt.hash(args.password, 12)
                     const picture = args.displayPicture ? args.displayPicture : Math.floor(Math.random() * 8)
                     var newUser = new User({
                         name: args.name,
+                        gToken: args.gToken,
                         email: args.email,
                         password: hashedPassword,
                         age: args.age,
-                        bmi: (args.height != null && args.weight != null) ? args.weight / (args.height * args.height) : null,
+                        bmi: bmi,
+                        bp: 3000,
+                        hp: 2500,
+                        healthIndex: (args.height != null && args.weight != null) ? (100 - (10 * Math.abs(bmi - 21.5))) : null,
                         gender: args.gender ? args.gender : null,
                         height: args.height ? args.height : null,
                         weight: args.weight ? args.weight : null,
@@ -350,32 +366,11 @@ const RootMutation = new GraphQLObjectType({
                     return { userId: savedUser.id, token: token, userType: 'User', tokenExpiration: 8760 }
                 }
                 catch (err) {
+                    console.log('Error creating a new user: ', err)
                     return err
                 }
             }
         },
-        // addDiet: {
-        //     type: GraphQLNonNull(DietType),
-        //     args: {
-        //         type: { type: GraphQLNonNull(GraphQLInt) },
-        //         name: { type: GraphQLNonNull(GraphQLString) },
-        //         quantity: { type: GraphQLNonNull(GraphQLInt) },
-        //     },
-        //     resolve(parent, args, req) {
-        //         try {
-        //             if (!req.userId) throw new Error('Unauthenticated')
-        //             var todaysDate = 
-        //             const metric = Metric.findOne({user: req.userId, date: })
-        //         }
-        //         catch (err) {
-        //             console.log('Error adding a new diet plan.', err)
-        //             return err;
-        //         }
-        //         const diet = new Diet({
-
-        //         })
-        //     }
-        // }
         buyInsurance: {
             type: GraphQLNonNull(InsuranceType),
             args: {
@@ -438,30 +433,101 @@ const RootMutation = new GraphQLObjectType({
                 }
             }
         },
-        sendChallenge: {
+        addDiet: {
+            type: GraphQLNonNull(DietType),
+            args: {
+                type: {type: GraphQLNonNull(GraphQLInt)},
+                name: {type: GraphQLNonNull(GraphQLString)},
+                quantity: {type: GraphQLNonNull(GraphQLInt)},
+                calorie: {type: GraphQLNonNull(GraphQLInt)},
+            },
+            async resolve (parent, args, req) {
+                try {
+                    if (!req.userId) throw new Error('Unauthenticated or Unauthorized!')
+                    const diet = new Diet({
+                        user: req.userId,
+                        type: args.type,
+                        name: args.name,
+                        quantity: args.quantity,
+                        calorie: args.calorie
+                    })
+                    const savedDiet = await diet.save()
+                    await User.findOneAndUpdate(req.userId, {$push: {diets: savedDiet.id}})
+                    return savedDiet
+                }
+                catch(err) {
+                    console.log('Error adding a new diet point')
+                    return err
+                }
+            }
+        },
+        createChallenge: {
             type: GraphQLNonNull(ChallengeType),
             args: {
-                friendId: { type: GraphQLNonNull(GraphQLString) },
-                type: { type: GraphQLNonNull(GraphQLString) },
-                value: { type: GraphQLNonNull(GraphQLString) }
+                type: {type: GraphQLNonNull(GraphQLString)},
+                value: {type: GraphQLNonNull(GraphQLString)}
             },
-            async resolve(parent, args, req) {
+            async resolve (parent, args, req) {
                 try {
-                    if (!req.userId) throw new Error('Unauthenticated')
-                    const reward = new Reward({
-
-                    })
+                    if (!req.userId) throw new Error('Unauthenticated or Unauthorized!')
+                    var rewardHP, rewardBP
+                    if(args.type == 'Steps') {
+                        rewardHP = (parseInt(args.value) / 100) / 4
+                        rewardBP = (parseInt(args.value) / 100) / 6
+                    }
+                    else {
+                        var value = parseInt(args.value)
+                        if(value == 2000) {
+                            rewardHP = 10,
+                            rewardBP = 15
+                        }
+                        else if (value == 2250) {
+                            rewardHP = 8,
+                            rewardBP = 10
+                        }
+                        else {
+                            rewardHP = 4,
+                            rewardBP = 5
+                        }
+                    }
                     const challenge = new Challenge({
+                        date: Date().getTime(),
+                        user: req.userId,
                         from: req.userId,
-                        to: friendId,
+                        to: req.userId,
+                        type: args.type,
+                        rewardBP: rewardBP,
+                        rewardHP: rewardHP,
+                        value: args.value,
+                        status: 'Alloted'
                     })
+                    const savedChallenge = await challenge.save() 
+                    await User.findByIdAndUpdate(req.userId, {$push: {challenges: savedChallenge.id}})
+                    return savedChallenge
                 }
-                catch (err) {
-                    console.log('Error buying the insurance.', err)
+                catch(err) {
+                    console.log('Error creating a new challenge')
                     return err
                 }
             }
         }
+        // syncWithFit: {
+        //     type: GraphQLList(MetricType),
+        //     args: {
+        //         accessToken: {type: GraphQLNonNull(GraphQLString)}
+        //     },
+        //     resolve (parent, args, req) {
+        //         try {
+        //             if(!req.userId) throw new Error('Unauthenticated')
+        //             const userMetrics = Metric.find({user: parent.id})
+        //             if(userMetrics.length == 0 || userMetrics[userMetrics.length].date )
+        //         }
+        //         catch(err) {
+        //             console.log('Error Syncing with Google Fit: ', err)
+        //             return err
+        //         }
+        //     }
+        // }
     }
 })
 

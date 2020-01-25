@@ -24,9 +24,12 @@ const challengeSchema = new Schema({
         ref: "User",
         required: true
     },
-    reward: {
-        type: Schema.Types.ObjectId,
-        ref: "Reward",
+    rewardBP: {
+        type: Number,
+        required: true
+    },
+    rewardHP: {
+        type: Number,
         required: true
     },
     status: {
